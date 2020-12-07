@@ -24,5 +24,24 @@ Function get-randompwd ()
                 break
             }
     } While ($PassComplexCheck -eq $false)
-    return $newPassword
+    return ($newPassword.replace('$','@'))
 }
+
+function Create-NewLocalAdmin {
+    [CmdletBinding()]
+    param(
+        [string]$NewLocalAdmin,
+        [string]$Password,
+        [double]$Active_minutes
+    )
+    $expire_date = $(get-date).AddMinutes($Active_minutes)
+    $secure_pass = ConvertTo-SecureString -String $Password -AsPlainText -Force
+    New-LocalUser "$NewLocalAdmin" -Password $secure_pass -FullName "$NewLocalAdmin" -AccountExpires $expire_date -PasswordNeverExpires -Description "Temporary local admin"
+    Write-Verbose "$NewLocalAdmin local user crated"
+    Add-LocalGroupMember -Group "Administrators" -Member "$NewLocalAdmin"
+    Write-Verbose "$NewLocalAdmin added to the local administrator group"
+
+}
+$NewLocalAdmin = Read-Host "New local admin username:"
+$Password = Read-Host -AsSecureString "Create a password for $NewLocalAdmin"
+Create-NewLocalAdmin -NewLocalAdmin $NewLocalAdmin -Password $Password -Verbose
