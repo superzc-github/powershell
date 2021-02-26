@@ -48,7 +48,7 @@ function verify_cred(){
 function reset_ADpswd(){
     param($Account,$domain,$oldPass,$newPass)
     try{
-        Set-ADAccountPassword -Identity $Account -OldPassword "$oldPass" -NewPassword "$newPass" -Server $domain
+        Set-ADAccountPassword -Identity $Account -OldPassword $oldPass -NewPassword $newPass -Server $domain
     }
     catch {
         write-host "Password update process met exception." -ForegroundColor red
@@ -79,7 +79,7 @@ if($verify_only -notlike "true"){
         write-host "Please confirm the account or domain name." -ForegroundColor red
         write-host "Error Message:" -ForegroundColor darkgray
         write-host $error[0] -ForegroundColor darkgray
-        break;
+        exit 1;
     }
 
     write-host "Account:$Account in Domain:$domain,Verified successfully AD Info:" -ForegroundColor green
@@ -93,7 +93,7 @@ if($verify_only -notlike "true"){
         if ($newPass -ine $null){
             $confirmNew= read-host "Continue? Yes/No"
             if ($confirmNew -eq "Yes"){
-                reset_ADpswd $Account $domain $oldPass $newPass
+                reset_ADpswd $Account $domain $oldPass -newPass $newPass
                 $decrypted_new = [System.Net.NetworkCredential]::new("", "$newPass").Password
                 "$decrypted_new" | write-host -ForegroundColor green
                 $outputFile=".\$Account"+".txt"
